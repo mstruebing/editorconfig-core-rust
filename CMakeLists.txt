@@ -1,0 +1,5 @@
+project(editorconfig-core-rust)
+cmake_minimum_required(VERSION 3.13)
+enable_testing()
+set(EDITORCONFIG_CMD ${CMAKE_CURRENT_LIST_DIR}/target/release/editorconfig-core-rust)
+add_subdirectory(core-test)
