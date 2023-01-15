@@ -1,5 +1,8 @@
-build: 
+build:
 	cargo build --release
+
+run:
+	cargo run -- Makefile ./core-test/README.md
 
 test:
 	cargo test
