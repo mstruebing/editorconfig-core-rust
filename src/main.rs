@@ -54,46 +54,50 @@ impl Editorconfig {
     }
 
     pub fn merge(&mut self, editorconfig: Editorconfig) {
-        if self.indent_style == MyOption::None && editorconfig.indent_style != MyOption::None
-            || editorconfig.indent_style == MyOption::Unset
+        if self.indent_style == MyOption::None
+            && (editorconfig.indent_style != MyOption::None
+                || editorconfig.indent_style == MyOption::Unset)
         {
             self.indent_style = editorconfig.indent_style
         }
 
-        if self.indent_size == MyOption::None && editorconfig.indent_size != MyOption::None
-            || editorconfig.indent_size == MyOption::Unset
+        if self.indent_size == MyOption::None
+            && (editorconfig.indent_size != MyOption::None
+                || editorconfig.indent_size == MyOption::Unset)
         {
             self.indent_size = editorconfig.indent_size
         }
 
-        if self.tab_width == MyOption::None && editorconfig.tab_width != MyOption::None
-            || editorconfig.tab_width == MyOption::Unset
+        if self.tab_width == MyOption::None
+            && (editorconfig.tab_width != MyOption::None
+                || editorconfig.tab_width == MyOption::Unset)
         {
             self.tab_width = editorconfig.tab_width
         }
 
-        if self.end_of_line == MyOption::None && editorconfig.end_of_line != MyOption::None
-            || editorconfig.end_of_line == MyOption::Unset
+        if self.end_of_line == MyOption::None
+            && (editorconfig.end_of_line != MyOption::None
+                || editorconfig.end_of_line == MyOption::Unset)
         {
             self.end_of_line = editorconfig.end_of_line
         }
 
-        if self.charset == MyOption::None && editorconfig.charset != MyOption::None
-            || editorconfig.charset == MyOption::Unset
+        if self.charset == MyOption::None
+            && (editorconfig.charset != MyOption::None || editorconfig.charset == MyOption::Unset)
         {
             self.charset = editorconfig.charset
         }
 
         if self.trim_trailing_whitespace == MyOption::None
-            && editorconfig.trim_trailing_whitespace != MyOption::None
-            || editorconfig.trim_trailing_whitespace == MyOption::Unset
+            && (editorconfig.trim_trailing_whitespace != MyOption::None
+                || editorconfig.trim_trailing_whitespace == MyOption::Unset)
         {
             self.trim_trailing_whitespace = editorconfig.trim_trailing_whitespace
         }
 
         if self.insert_final_newline == MyOption::None
-            && editorconfig.insert_final_newline != MyOption::None
-            || editorconfig.insert_final_newline == MyOption::Unset
+            && (editorconfig.insert_final_newline != MyOption::None
+                || editorconfig.insert_final_newline == MyOption::Unset)
         {
             self.insert_final_newline = editorconfig.insert_final_newline
         }
