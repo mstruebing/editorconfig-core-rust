@@ -2,7 +2,7 @@ build:
 	cargo build --release
 
 run:
-	cargo run -- Makefile ./core-test/README.md
+	cargo run -- Makefile ./core-test/README.md ./README.md
 
 test:
 	cargo test

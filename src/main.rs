@@ -34,6 +34,73 @@ struct Editorconfig {
     insert_final_newline: Option<bool>,
 }
 
+impl Editorconfig {
+    pub fn print(self) {
+        self.print_indent_style();
+        self.print_indent_size();
+        self.print_tab_width();
+        self.print_trim_trailing_whitespace();
+        self.print_insert_final_newline();
+        self.print_end_of_line();
+        self.print_charset();
+    }
+
+    fn print_indent_style(&self) {
+        if let Some(indent_style) = &self.indent_style {
+            match indent_style {
+                IndentStyle::Tab => println!("indent_style=tab"),
+                IndentStyle::Space => println!("indent_style=space"),
+            }
+        }
+    }
+
+    fn print_indent_size(&self) {
+        if let Some(indent_size) = self.indent_size {
+            println!("indent_size={}", indent_size);
+        }
+    }
+
+    fn print_tab_width(&self) {
+        if let Some(tab_width) = self.tab_width {
+            println!("tab_width={}", tab_width);
+        }
+    }
+
+    fn print_trim_trailing_whitespace(&self) {
+        if let Some(trim_trailing_whitespace) = self.trim_trailing_whitespace {
+            println!("trim_trailing_whitespace={}", trim_trailing_whitespace);
+        }
+    }
+
+    fn print_insert_final_newline(&self) {
+        if let Some(insert_final_newline) = self.insert_final_newline {
+            println!("insert_final_newline={}", insert_final_newline);
+        }
+    }
+
+    fn print_end_of_line(&self) {
+        if let Some(end_of_line) = &self.end_of_line {
+            match end_of_line {
+                EndOfLine::Lf => println!("end_of_line=lf"),
+                EndOfLine::Cr => println!("end_of_line=cr"),
+                EndOfLine::Crlf => println!("end_of_line=crlf"),
+            }
+        }
+    }
+
+    fn print_charset(&self) {
+        if let Some(charset) = &self.charset {
+            match charset {
+                Charset::Latin1 => println!("charset=latin1"),
+                Charset::Utf8 => println!("charset=utf-8"),
+                Charset::Utf8Bom => println!("charset=utf-8-bom"),
+                Charset::Utf16Be => println!("charset=uft-16-be"),
+                Charset::Utf16Le => println!("charset=utf-16-le"),
+            }
+        }
+    }
+}
+
 #[derive(Debug)]
 enum IndentStyle {
     Space,
@@ -66,7 +133,9 @@ fn main() {
     // Testing output
     for definition in definitions {
         println!("file: {:?}", definition.0);
-        println!("file: {:?}", definition.1);
+        for ele in definition.1 {
+            ele.print();
+        }
     }
 }
 
