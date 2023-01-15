@@ -79,6 +79,7 @@ name = "editorconfig-core-rust"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "fnmatch-sys",
  "rust-ini",
 ]
 
@@ -101,6 +102,15 @@ checksum = "aa68f1b12764fab894d2755d2518754e71b4fd80ecfb822714a1206c2aab39bf"
 dependencies = [
  "cc",
  "libc",
+]
+
+[[package]]
+name = "fnmatch-sys"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2669e8526f74ef00ccd2011b1e357f6eebcea2925b28e67fcedd1740196f45b3"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
