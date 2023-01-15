@@ -23,18 +23,82 @@ struct Args {
     filepaths: Vec<PathBuf>,
 }
 
-#[derive(Debug)]
+#[derive(PartialEq)]
+enum MyOption<T> {
+    None,
+    Unset,
+    Some(T),
+}
+
 struct Editorconfig {
-    indent_style: Option<IndentStyle>,
-    indent_size: Option<i8>,
-    tab_width: Option<i8>,
-    end_of_line: Option<EndOfLine>,
-    charset: Option<Charset>,
-    trim_trailing_whitespace: Option<bool>,
-    insert_final_newline: Option<bool>,
+    indent_style: MyOption<IndentStyle>,
+    indent_size: MyOption<i8>,
+    tab_width: MyOption<i8>,
+    end_of_line: MyOption<EndOfLine>,
+    charset: MyOption<Charset>,
+    trim_trailing_whitespace: MyOption<bool>,
+    insert_final_newline: MyOption<bool>,
 }
 
 impl Editorconfig {
+    pub fn new() -> Editorconfig {
+        Editorconfig {
+            indent_size: MyOption::None,
+            indent_style: MyOption::None,
+            tab_width: MyOption::None,
+            end_of_line: MyOption::None,
+            charset: MyOption::None,
+            trim_trailing_whitespace: MyOption::None,
+            insert_final_newline: MyOption::None,
+        }
+    }
+
+    pub fn merge(&mut self, editorconfig: Editorconfig) {
+        if self.indent_style == MyOption::None && editorconfig.indent_style != MyOption::None
+            || editorconfig.indent_style == MyOption::Unset
+        {
+            self.indent_style = editorconfig.indent_style
+        }
+
+        if self.indent_size == MyOption::None && editorconfig.indent_size != MyOption::None
+            || editorconfig.indent_size == MyOption::Unset
+        {
+            self.indent_size = editorconfig.indent_size
+        }
+
+        if self.tab_width == MyOption::None && editorconfig.tab_width != MyOption::None
+            || editorconfig.tab_width == MyOption::Unset
+        {
+            self.tab_width = editorconfig.tab_width
+        }
+
+        if self.end_of_line == MyOption::None && editorconfig.end_of_line != MyOption::None
+            || editorconfig.end_of_line == MyOption::Unset
+        {
+            self.end_of_line = editorconfig.end_of_line
+        }
+
+        if self.charset == MyOption::None && editorconfig.charset != MyOption::None
+            || editorconfig.charset == MyOption::Unset
+        {
+            self.charset = editorconfig.charset
+        }
+
+        if self.trim_trailing_whitespace == MyOption::None
+            && editorconfig.trim_trailing_whitespace != MyOption::None
+            || editorconfig.trim_trailing_whitespace == MyOption::Unset
+        {
+            self.trim_trailing_whitespace = editorconfig.trim_trailing_whitespace
+        }
+
+        if self.insert_final_newline == MyOption::None
+            && editorconfig.insert_final_newline != MyOption::None
+            || editorconfig.insert_final_newline == MyOption::Unset
+        {
+            self.insert_final_newline = editorconfig.insert_final_newline
+        }
+    }
+
     pub fn print(self) {
         self.print_indent_style();
         self.print_indent_size();
@@ -46,7 +110,7 @@ impl Editorconfig {
     }
 
     fn print_indent_style(&self) {
-        if let Some(indent_style) = &self.indent_style {
+        if let MyOption::Some(indent_style) = &self.indent_style {
             match indent_style {
                 IndentStyle::Tab => println!("indent_style=tab"),
                 IndentStyle::Space => println!("indent_style=space"),
@@ -55,31 +119,31 @@ impl Editorconfig {
     }
 
     fn print_indent_size(&self) {
-        if let Some(indent_size) = self.indent_size {
+        if let MyOption::Some(indent_size) = self.indent_size {
             println!("indent_size={}", indent_size);
         }
     }
 
     fn print_tab_width(&self) {
-        if let Some(tab_width) = self.tab_width {
+        if let MyOption::Some(tab_width) = self.tab_width {
             println!("tab_width={}", tab_width);
         }
     }
 
     fn print_trim_trailing_whitespace(&self) {
-        if let Some(trim_trailing_whitespace) = self.trim_trailing_whitespace {
+        if let MyOption::Some(trim_trailing_whitespace) = self.trim_trailing_whitespace {
             println!("trim_trailing_whitespace={}", trim_trailing_whitespace);
         }
     }
 
     fn print_insert_final_newline(&self) {
-        if let Some(insert_final_newline) = self.insert_final_newline {
+        if let MyOption::Some(insert_final_newline) = self.insert_final_newline {
             println!("insert_final_newline={}", insert_final_newline);
         }
     }
 
     fn print_end_of_line(&self) {
-        if let Some(end_of_line) = &self.end_of_line {
+        if let MyOption::Some(end_of_line) = &self.end_of_line {
             match end_of_line {
                 EndOfLine::Lf => println!("end_of_line=lf"),
                 EndOfLine::Cr => println!("end_of_line=cr"),
@@ -89,7 +153,7 @@ impl Editorconfig {
     }
 
     fn print_charset(&self) {
-        if let Some(charset) = &self.charset {
+        if let MyOption::Some(charset) = &self.charset {
             match charset {
                 Charset::Latin1 => println!("charset=latin1"),
                 Charset::Utf8 => println!("charset=utf-8"),
@@ -101,20 +165,20 @@ impl Editorconfig {
     }
 }
 
-#[derive(Debug)]
+#[derive(PartialEq)]
 enum IndentStyle {
     Space,
     Tab,
 }
 
-#[derive(Debug)]
+#[derive(PartialEq)]
 enum EndOfLine {
     Lf,
     Cr,
     Crlf,
 }
 
-#[derive(Debug)]
+#[derive(PartialEq)]
 enum Charset {
     Latin1,
     Utf8,
@@ -123,7 +187,7 @@ enum Charset {
     Utf16Le,
 }
 
-type Definitions = HashMap<PathBuf, Vec<Editorconfig>>;
+type Definitions = HashMap<PathBuf, Editorconfig>;
 
 fn main() {
     let args = Args::parse();
@@ -133,9 +197,7 @@ fn main() {
     // Testing output
     for definition in definitions {
         println!("file: {:?}", definition.0);
-        for ele in definition.1 {
-            ele.print();
-        }
+        definition.1.print();
     }
 }
 
@@ -146,17 +208,17 @@ fn make_absolute_paths(filepaths: Vec<PathBuf>) -> Vec<PathBuf> {
         .collect()
 }
 
-fn get_editorconfigs_for_file(filepath: &Path) -> Vec<Editorconfig> {
-    let mut editorconfigs: Vec<Editorconfig> = Vec::new();
+fn get_editorconfig_for_file(filepath: &Path) -> Editorconfig {
+    let mut editorconfig: Editorconfig = Editorconfig::new();
     let mut path = filepath.to_path_buf();
 
     while path.pop() {
-        if let Some(editorconfig) = fs::read_dir(&path)
+        if let Some(file) = fs::read_dir(&path)
             .expect("read_dir call failed")
             .flatten()
             .find(|x| x.path().ends_with(".editorconfig"))
         {
-            let ini = Ini::load_from_file(editorconfig.path()).unwrap();
+            let ini = Ini::load_from_file(file.path()).unwrap();
             let is_root = is_root(&ini);
 
             let sections = ini.sections().map(|x| x.unwrap_or(""));
@@ -175,21 +237,18 @@ fn get_editorconfigs_for_file(filepath: &Path) -> Vec<Editorconfig> {
                             || section == filepath.file_name().unwrap();
 
                         if matches {
-                            editorconfigs.insert(
-                                0,
-                                Editorconfig {
-                                    indent_style: get_indent_style(&ini, section),
-                                    indent_size: get_indent_size(&ini, section),
-                                    tab_width: get_tab_width(&ini, section),
-                                    charset: get_charset(&ini, section),
-                                    end_of_line: get_end_of_line(&ini, section),
-                                    trim_trailing_whitespace: get_trim_trailing_whitespace(
-                                        &ini, section,
-                                    ),
-                                    insert_final_newline: get_insert_final_newline(&ini, section),
-                                },
-                            )
-                        }
+                            editorconfig.merge(Editorconfig {
+                                indent_style: get_indent_style(&ini, section),
+                                indent_size: get_indent_size(&ini, section),
+                                tab_width: get_tab_width(&ini, section),
+                                charset: get_charset(&ini, section),
+                                end_of_line: get_end_of_line(&ini, section),
+                                trim_trailing_whitespace: get_trim_trailing_whitespace(
+                                    &ini, section,
+                                ),
+                                insert_final_newline: get_insert_final_newline(&ini, section),
+                            });
+                        };
                     }
                 }
             });
@@ -200,14 +259,14 @@ fn get_editorconfigs_for_file(filepath: &Path) -> Vec<Editorconfig> {
         }
     }
 
-    editorconfigs
+    editorconfig
 }
 
 fn get_definitions(paths: Vec<PathBuf>) -> Definitions {
     paths
         .into_iter()
         .fold(HashMap::new(), |mut map: Definitions, path| {
-            map.insert(path.clone(), get_editorconfigs_for_file(&path));
+            map.insert(path.clone(), get_editorconfig_for_file(&path));
             map
         })
 }
@@ -224,88 +283,102 @@ fn is_root(ini: &Ini) -> bool {
     false
 }
 
-fn get_indent_style(ini: &Ini, section: &str) -> Option<IndentStyle> {
-    let indent_style = ini
-        .section(Some(section))
-        .unwrap()
-        .get("indent_style")
-        .and_then(|x| match x {
-            "space" => Some(IndentStyle::Space),
-            "tab" => Some(IndentStyle::Tab),
-            _ => None,
-        });
+fn get_indent_style(ini: &Ini, section: &str) -> MyOption<IndentStyle> {
+    let indent_style_option = ini.section(Some(section)).unwrap().get("indent_style");
 
-    indent_style
+    match indent_style_option {
+        Some(indent_style) => match indent_style {
+            "space" => MyOption::Some(IndentStyle::Space),
+            "tab" => MyOption::Some(IndentStyle::Tab),
+            "unset" => MyOption::Unset,
+            _ => MyOption::None,
+        },
+        None => MyOption::None,
+    }
 }
 
-fn get_indent_size(ini: &Ini, section: &str) -> Option<i8> {
-    let indent_size = ini
-        .section(Some(section))
-        .unwrap()
-        .get("indent_size")
-        .and_then(|x| x.parse::<i8>().ok());
+fn get_indent_size(ini: &Ini, section: &str) -> MyOption<i8> {
+    let indent_size_option = ini.section(Some(section)).unwrap().get("indent_size");
 
-    indent_size
+    match indent_size_option {
+        Some(indent_size) => match indent_size {
+            "unset" => MyOption::Unset,
+            x => x.parse::<i8>().map_or(MyOption::None, MyOption::Some),
+        },
+        None => MyOption::None,
+    }
 }
 
-fn get_tab_width(ini: &Ini, section: &str) -> Option<i8> {
-    let tab_width = ini
-        .section(Some(section))
-        .unwrap()
-        .get("tab_width")
-        .and_then(|x| x.parse::<i8>().ok());
+fn get_tab_width(ini: &Ini, section: &str) -> MyOption<i8> {
+    let tab_width_option = ini.section(Some(section)).unwrap().get("tab_width");
 
-    tab_width
+    match tab_width_option {
+        Some(tab_width) => match tab_width {
+            "unset" => MyOption::Unset,
+            x => x.parse::<i8>().map_or(MyOption::None, MyOption::Some),
+        },
+        None => MyOption::None,
+    }
 }
 
-fn get_trim_trailing_whitespace(ini: &Ini, section: &str) -> Option<bool> {
-    let trim_trailing_whitespace = ini
+fn get_trim_trailing_whitespace(ini: &Ini, section: &str) -> MyOption<bool> {
+    let trim_trailing_whitespace_option = ini
         .section(Some(section))
         .unwrap()
-        .get("trim_trailing_whitespace")
-        .and_then(|x| x.parse::<bool>().ok());
+        .get("trim_trailing_whitespace");
 
-    trim_trailing_whitespace
+    match trim_trailing_whitespace_option {
+        Some(trim_trailing_whitespace) => match trim_trailing_whitespace {
+            "unset" => MyOption::Unset,
+            x => x.parse::<bool>().map_or(MyOption::None, MyOption::Some),
+        },
+        None => MyOption::None,
+    }
 }
 
-fn get_insert_final_newline(ini: &Ini, section: &str) -> Option<bool> {
-    let insert_final_newline = ini
+fn get_insert_final_newline(ini: &Ini, section: &str) -> MyOption<bool> {
+    let insert_final_newline_option = ini
         .section(Some(section))
         .unwrap()
-        .get("insert_final_newline")
-        .and_then(|x| x.parse::<bool>().ok());
+        .get("insert_final_newline");
 
-    insert_final_newline
+    match insert_final_newline_option {
+        Some(insert_final_newline) => match insert_final_newline {
+            "unset" => MyOption::Unset,
+            x => x.parse::<bool>().map_or(MyOption::None, MyOption::Some),
+        },
+        None => MyOption::None,
+    }
 }
 
-fn get_end_of_line(ini: &Ini, section: &str) -> Option<EndOfLine> {
-    let end_of_line = ini
-        .section(Some(section))
-        .unwrap()
-        .get("end_of_line")
-        .and_then(|x| match x {
-            "lf" => Some(EndOfLine::Lf),
-            "cr" => Some(EndOfLine::Cr),
-            "crlf" => Some(EndOfLine::Crlf),
-            _ => None,
-        });
+fn get_end_of_line(ini: &Ini, section: &str) -> MyOption<EndOfLine> {
+    let end_of_line_option = ini.section(Some(section)).unwrap().get("end_of_line");
 
-    end_of_line
+    match end_of_line_option {
+        Some(end_of_line) => match end_of_line {
+            "lf" => MyOption::Some(EndOfLine::Lf),
+            "cr" => MyOption::Some(EndOfLine::Cr),
+            "crlf" => MyOption::Some(EndOfLine::Crlf),
+            "unset" => MyOption::Unset,
+            _ => MyOption::None,
+        },
+        None => MyOption::None,
+    }
 }
 
-fn get_charset(ini: &Ini, section: &str) -> Option<Charset> {
-    let charset = ini
-        .section(Some(section))
-        .unwrap()
-        .get("charset")
-        .and_then(|x| match x {
-            "latin1" => Some(Charset::Latin1),
-            "utf-8" => Some(Charset::Utf8),
-            "utf-8-bom" => Some(Charset::Utf8Bom),
-            "utf-16-be" => Some(Charset::Utf16Be),
-            "utf-16-le" => Some(Charset::Utf16Le),
-            _ => None,
-        });
+fn get_charset(ini: &Ini, section: &str) -> MyOption<Charset> {
+    let charset_option = ini.section(Some(section)).unwrap().get("charset");
 
-    charset
+    match charset_option {
+        Some(charset) => match charset {
+            "latin1" => MyOption::Some(Charset::Latin1),
+            "utf-8" => MyOption::Some(Charset::Utf8),
+            "utf-8-bom" => MyOption::Some(Charset::Utf8Bom),
+            "utf-16-be" => MyOption::Some(Charset::Utf16Be),
+            "utf-16-le" => MyOption::Some(Charset::Utf16Le),
+            "unset" => MyOption::Unset,
+            _ => MyOption::None,
+        },
+        None => MyOption::None,
+    }
 }
