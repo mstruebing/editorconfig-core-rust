@@ -14,3 +14,7 @@ test-core: build
 		ctest \
 		-E "^(octothorpe_in_value)$$" \
 		--output-on-failure \
+
+
+stuff: build
+	cd core-test && "/home/maex/projects/own/editorconfig-core-rust/target/release/editorconfig-core-rust" "-f" "whitespace.in" "/home/maex/projects/own/editorconfig-core-rust/core-test/parser/test1.c"
