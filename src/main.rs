@@ -1,14 +1,16 @@
 use std::collections::HashMap;
 use std::ffi::CString;
-use std::fs;
+
 use std::path::Path;
 use std::path::PathBuf;
+
+use path_clean::clean;
 
 use clap::Parser;
 use ini::Ini;
 
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[command(about, long_about = None)]
 struct Args {
     /// Specify conf filename other than '.editorconfig'
     #[arg(short, default_value_t = String::from(".editorconfig"))]
@@ -19,8 +21,12 @@ struct Args {
     b: String,
 
     /// Files to find configuration for.  Can be a hyphen (-) if you want path(s) to be read from stdin.
-    #[arg(name("FILEPATH"), required(true))]
+    #[arg(name("FILEPATH"))]
     filepaths: Vec<PathBuf>,
+
+    /// Show the version
+    #[arg(short, long, default_value_t = false)]
+    version: bool,
 }
 
 type Definitions = HashMap<PathBuf, FileDefinition>;
@@ -65,34 +71,29 @@ fn merge(fst: &FileDefinition, snd: &FileDefinition) -> FileDefinition {
 
 fn main() {
     let args = Args::parse();
+
+    if args.version {
+        println!("editorconfig-core-rust: {}", env!("CARGO_PKG_VERSION"));
+        return;
+    }
+
     let paths = make_absolute_paths(args.filepaths);
     let definitions = get_definitions(paths, &args.f);
 
     // Testing output
     for definition in definitions {
         for (key, value) in definition.1.iter() {
-            println!("{}={}", key, value);
+            println!("{}={}", key.to_lowercase(), value);
         }
     }
 }
 
 fn make_absolute_paths(filepaths: Vec<PathBuf>) -> Vec<PathBuf> {
-    filepaths
-        .into_iter()
-        .map(|f| {
-            let result = fs::canonicalize(f.clone()).ok();
+    filepaths.into_iter().map(clean).collect()
+}
 
-            match result {
-                Some(path) => path,
-                None => match f.parent() {
-                    Some(parent) => fs::canonicalize(parent)
-                        .unwrap()
-                        .join(Path::new(f.file_name().unwrap().to_str().unwrap())),
-                    None => f,
-                },
-            }
-        })
-        .collect()
+fn path_contains_editoconfig(path: &Path, editorconfig_file: &str) -> bool {
+    std::path::Path::new(&path.join(editorconfig_file)).exists()
 }
 
 fn get_editorconfig_for_file(filepath: &Path, editorconfig_file: &str) -> FileDefinition {
@@ -100,12 +101,13 @@ fn get_editorconfig_for_file(filepath: &Path, editorconfig_file: &str) -> FileDe
     let mut path = filepath.to_path_buf();
 
     while path.pop() {
-        if let Some(file) = fs::read_dir(&path)
-            .expect("read_dir call failed")
-            .flatten()
-            .find(|x| x.path().ends_with(editorconfig_file))
-        {
-            let ini = Ini::load_from_file(file.path()).unwrap();
+        // println!(
+        //     "path_contains_editoconfig(path, editorconfig_file): {:?} {:?}",
+        //     path,
+        //     path_contains_editoconfig(&path, editorconfig_file)
+        // );
+        if path_contains_editoconfig(&path, editorconfig_file) {
+            let ini = Ini::load_from_file(&path.join(editorconfig_file)).unwrap();
             let is_root = is_root(&ini);
 
             let sections = ini.sections().map(|x| x.unwrap_or(""));

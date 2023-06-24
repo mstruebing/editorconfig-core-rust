@@ -17,4 +17,4 @@ test-core: build
 
 
 stuff: build
-	cd core-test && "/home/maex/projects/own/editorconfig-core-rust/target/release/editorconfig-core-rust" "-f" "whitespace.in" "/home/maex/projects/own/editorconfig-core-rust/core-test/parser/test1.c"
+	cd core-test && "/home/maex/projects/own/editorconfig-core-rust/target/release/editorconfig-core-rust" "-f" "meta.in" "/home/maex/projects/own/editorconfig-core-rust/core-test/meta/meta.c"
